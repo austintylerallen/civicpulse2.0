@@ -12,16 +12,13 @@ const Settings = () => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
             try {
-                console.log('Fetching user data...');
                 const res = await axios.get('http://localhost:5001/api/users/me', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                console.log('User data:', res.data);
                 setName(res.data.name);
                 setEmail(res.data.email);
                 setLoading(false);
             } catch (err) {
-                console.error('Error fetching user data:', err);
                 toast.error('Failed to fetch user data');
                 setLoading(false);
             }
@@ -33,16 +30,13 @@ const Settings = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            console.log('Updating user data...');
-            const res = await axios.put(
+            await axios.put(
                 'http://localhost:5001/api/users/me',
                 { name, email },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            console.log('Updated user data:', res.data);
             toast.success('Profile updated successfully!');
         } catch (err) {
-            console.error('Error updating profile:', err);
             toast.error('Failed to update profile');
         }
     };
@@ -52,11 +46,11 @@ const Settings = () => {
     }
 
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto p-4">
             <h2 className="text-3xl text-center my-4">Settings</h2>
-            <form onSubmit={updateUser} className="max-w-md mx-auto">
-                <div className="mb-4">
-                    <label className="block text-gray-700">Name</label>
+            <form onSubmit={updateUser} className="max-w-lg mx-auto space-y-2">
+                <div>
+                    <label className="block text-gray-700 mb-1">Name</label>
                     <input
                         type="text"
                         value={name}
@@ -65,8 +59,8 @@ const Settings = () => {
                         required
                     />
                 </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Email</label>
+                <div>
+                    <label className="block text-gray-700 mb-1">Email</label>
                     <input
                         type="email"
                         value={email}

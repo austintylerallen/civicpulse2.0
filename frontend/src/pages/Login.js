@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,25 +10,21 @@ const Login = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        const userData = { email, password };
-        console.log('Sending login data:', userData); // Log sending data
         try {
-            const res = await axios.post('http://localhost:5001/api/users/login', userData);
-            console.log('Login response:', res.data); // Log response data
+            const res = await axios.post('http://localhost:5001/api/users/login', { email, password });
             localStorage.setItem('token', res.data.token);
-            toast.success('Logged in successfully!');
-            navigate('/'); // Use navigate instead of history.push
+            toast.success('Login successful!');
+            navigate('/dashboard'); // Redirect to dashboard after login
         } catch (err) {
-            console.error('Login error:', err.response ? err.response.data : err); // Log error
-            toast.error(err.response?.data?.msg || 'Login failed');
+            toast.error(err.response.data.msg || 'Login failed');
         }
     };
 
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto p-4">
             <h2 className="text-3xl text-center my-4">Login</h2>
-            <form onSubmit={onSubmit} className="max-w-md mx-auto">
-                <div className="mb-4">
+            <form onSubmit={onSubmit} className="max-w-md mx-auto space-y-4">
+                <div>
                     <label className="block text-gray-700">Email</label>
                     <input
                         type="email"
@@ -39,7 +34,7 @@ const Login = () => {
                         required
                     />
                 </div>
-                <div className="mb-4">
+                <div>
                     <label className="block text-gray-700">Password</label>
                     <input
                         type="password"

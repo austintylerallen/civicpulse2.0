@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
-    const [user, setUser] = useState({});
     const [loading, setLoading] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -16,7 +15,6 @@ const Profile = () => {
                 const res = await axios.get('http://localhost:5001/api/users/me', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setUser(res.data);
                 setName(res.data.name);
                 setEmail(res.data.email);
                 setLoading(false);
@@ -32,12 +30,11 @@ const Profile = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const res = await axios.put(
+            await axios.put(
                 'http://localhost:5001/api/users/me',
                 { name, email },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setUser(res.data);
             toast.success('Profile updated successfully!');
         } catch (err) {
             toast.error('Failed to update profile');
@@ -49,11 +46,11 @@ const Profile = () => {
     }
 
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto p-4">
             <h2 className="text-3xl text-center my-4">Profile</h2>
-            <form onSubmit={updateUser} className="max-w-md mx-auto">
-                <div className="mb-4">
-                    <label className="block text-gray-700">Name</label>
+            <form onSubmit={updateUser} className="max-w-lg mx-auto space-y-2">
+                <div>
+                    <label className="block text-gray-700 mb-1">Name</label>
                     <input
                         type="text"
                         value={name}
@@ -62,8 +59,8 @@ const Profile = () => {
                         required
                     />
                 </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Email</label>
+                <div>
+                    <label className="block text-gray-700 mb-1">Email</label>
                     <input
                         type="email"
                         value={email}
