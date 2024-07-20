@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
+        console.error('Registration error:', err.message);
         res.status(500).send('Server error');
     }
 };
@@ -44,17 +44,22 @@ exports.login = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
+        console.error('Login error:', err.message);
         res.status(500).send('Server error');
     }
 };
 
 exports.getUser = async (req, res) => {
     try {
+        console.log('Decoded user ID:', req.user.id); // Log decoded user ID
         const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            console.log('User not found');
+            return res.status(404).json({ msg: 'User not found' });
+        }
         res.json(user);
     } catch (err) {
-        console.error(err.message);
+        console.error('Get user error:', err.message); // Log error message
         res.status(500).send('Server error');
     }
 };

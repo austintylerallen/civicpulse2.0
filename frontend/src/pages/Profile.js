@@ -1,76 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
-    const [loading, setLoading] = useState(true);
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('No token found. Please log in.');
+                return;
+            }
+
             try {
+                console.log('Token:', token); // Log the token
                 const res = await axios.get('http://localhost:5001/api/users/me', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
-                setName(res.data.name);
-                setEmail(res.data.email);
-                setLoading(false);
+                setUser(res.data);
             } catch (err) {
-                toast.error('Failed to fetch user data');
-                setLoading(false);
+                toast.error('Failed to fetch user profile');
+                console.error('Failed to fetch user:', err); // Log error
             }
         };
         fetchUser();
     }, []);
 
-    const updateUser = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        try {
-            await axios.put(
-                'http://localhost:5001/api/users/me',
-                { name, email },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            toast.success('Profile updated successfully!');
-        } catch (err) {
-            toast.error('Failed to update profile');
-        }
-    };
-
-    if (loading) {
+    if (!user) {
         return <div>Loading...</div>;
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto">
             <h2 className="text-3xl text-center my-4">Profile</h2>
-            <form onSubmit={updateUser} className="max-w-lg mx-auto space-y-2">
-                <div>
-                    <label className="block text-gray-700 mb-1">Name</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 mb-1">Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        required
-                    />
-                </div>
-                <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">Update Profile</button>
-            </form>
+            <div className="p-4 border border-gray-300 rounded">
+                <p><strong>Name:</strong> {user.name}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                {/* Add other user details as needed */}
+            </div>
         </div>
     );
 };

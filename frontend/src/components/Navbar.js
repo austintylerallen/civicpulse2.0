@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProfileDropdown from './ProfileDropdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome } from '@fortawesome/free-solid-svg-icons';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -17,7 +19,12 @@ const Navbar = () => {
                 <Link to="/" className="text-white text-2xl font-bold">CivicPulse</Link>
                 <div className="flex items-center">
                     {isAuthenticated ? (
-                        <ProfileDropdown onLogout={handleLogout} />
+                        <>
+                            <Link to="/dashboard" className="text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <FontAwesomeIcon icon={faHome} />
+                            </Link>
+                            <ProfileDropdown onLogout={handleLogout} />
+                        </>
                     ) : (
                         <>
                             <Link to="/login" className="text-white px-3 py-2 rounded-md text-sm font-medium">Login</Link>

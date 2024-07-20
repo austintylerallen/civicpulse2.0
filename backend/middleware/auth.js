@@ -13,7 +13,7 @@ const verifyToken = async (req, res, next) => {
         console.log('Decoded user:', req.user); // Log decoded user
         next();
     } catch (err) {
-        console.error('Token verification error:', err); // Log token verification error
+        console.error('Token verification error:', err.message); // Log token verification error
         res.status(401).json({ msg: 'Token is not valid' });
     }
 };
