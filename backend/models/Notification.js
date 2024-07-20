@@ -4,20 +4,20 @@ const NotificationSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: true
     },
     message: {
         type: String,
-        required: true,
+        required: true
     },
     isRead: {
         type: Boolean,
-        default: false,
+        default: false
     },
     createdAt: {
         type: Date,
-        default: Date.now,
-    },
+        default: Date.now
+    }
 });
 
 module.exports = mongoose.model('Notification', NotificationSchema);
