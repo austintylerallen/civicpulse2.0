@@ -4,6 +4,10 @@ const User = require('../models/User');
 
 exports.register = async (req, res) => {
     const { name, email, password } = req.body;
+    console.log('Received registration data:', req.body);
+    if (!name || !email || !password) {
+        return res.status(400).json({ msg: 'Please enter all fields' });
+    }
     try {
         let user = await User.findOne({ email });
         if (user) {
@@ -19,7 +23,7 @@ exports.register = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
+        console.error('Server error:', err.message);
         res.status(500).send('Server error');
     }
 };
@@ -41,7 +45,7 @@ exports.login = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
+        console.error('Server error:', err.message);
         res.status(500).send('Server error');
     }
 };
@@ -51,7 +55,7 @@ exports.getUser = async (req, res) => {
         const user = await User.findById(req.user.id).select('-password');
         res.json(user);
     } catch (err) {
-        console.error(err.message);
+        console.error('Server error:', err.message);
         res.status(500).send('Server error');
     }
 };
