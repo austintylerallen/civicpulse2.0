@@ -54,6 +54,21 @@ const Dashboard = () => {
         }
     };
 
+    const deleteComment = async (eventId, commentId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.delete(`http://localhost:5001/api/events/${eventId}/comment/${commentId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setEvents(events.map(event => event._id === eventId ? { ...event, comments: res.data } : event));
+            toast.success('Comment deleted');
+        } catch (err) {
+            toast.error('Failed to delete comment');
+        }
+    };
+
     const likeEvent = async (eventId) => {
         try {
             const token = localStorage.getItem('token');
@@ -82,13 +97,27 @@ const Dashboard = () => {
         }
     };
 
+    const rsvpEvent = async (eventId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`http://localhost:5001/api/events/${eventId}/rsvp`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setEvents(events.map(event => event._id === eventId ? { ...event, attendees: res.data } : event));
+        } catch (err) {
+            toast.error('Failed to RSVP');
+        }
+    };
+
     if (loading) {
         return <div>Loading...</div>; // Render loading state
     }
 
     return (
         <div className="container mx-auto p-4">
-            <h2 className="text-3xl text-center my-4 font-bold text-gray-800">Dashboard</h2>
+            <h2 className="text-3xl text-center my-4">Dashboard</h2>
             <div className="mb-4 flex justify-between">
                 <input
                     type="text"
@@ -112,23 +141,44 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredEvents.length > 0 ? (
                     filteredEvents.map(event => (
-                        <div key={event._id} className="p-4 border border-gray-300 rounded shadow-md hover:shadow-lg transition-shadow duration-300">
-                            <h3 className="text-xl font-semibold text-gray-700">{event.title}</h3>
-                            <p className="text-gray-600">{event.description}</p>
-                            <p className="text-gray-500"><strong>Date:</strong> {new Date(event.date).toLocaleString()}</p>
-                            <p className="text-gray-500"><strong>Location:</strong> {event.location}</p>
-                            <p className="text-gray-500"><strong>Category:</strong> {event.category}</p>
-                            <div className="flex justify-between items-center mt-4">
-                                <button onClick={() => likeEvent(event._id)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300">Like</button>
-                                <button onClick={() => unlikeEvent(event._id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors duration-300">Unlike</button>
-                                <p className="text-gray-700"><strong>Likes:</strong> {event.likes?.length || 0}</p>
-                            </div>
-                            <div className="mt-4">
-                                <h4 className="font-semibold text-gray-700">Comments</h4>
+                        <div key={event._id} className="p-4 border border-gray-300 rounded">
+                            <h3 className="text-xl">{event.title}</h3>
+                            <p>{event.description}</p>
+                            <p><strong>Date:</strong> {new Date(event.date).toLocaleString()}</p>
+                            <p><strong>Location:</strong> {event.location}</p>
+                            <p><strong>Category:</strong> {event.category}</p>
+                            <button 
+                                onClick={() => likeEvent(event._id)} 
+                                className="bg-blue-500 text-white p-2 rounded mr-2 mt-2"
+                            >
+                                Like
+                            </button>
+                            <button 
+                                onClick={() => unlikeEvent(event._id)} 
+                                className="bg-gray-500 text-white p-2 rounded mr-2 mt-2"
+                            >
+                                Unlike
+                            </button>
+                            <button 
+                                onClick={() => rsvpEvent(event._id)} 
+                                className="bg-green-500 text-white p-2 rounded mt-2"
+                            >
+                                RSVP
+                            </button>
+                            <p><strong>Likes:</strong> {event.likes?.length || 0}</p>
+                            <p><strong>Attendees:</strong> {event.attendees?.length || 0}</p>
+                            <div>
+                                <h4>Comments</h4>
                                 {event.comments?.map(comment => (
-                                    <div key={comment._id} className="border-t border-gray-200 mt-2 pt-2">
-                                        <p className="text-gray-600">{comment.text}</p>
-                                        <small className="text-gray-500">{new Date(comment.date).toLocaleString()}</small>
+                                    <div key={comment._id} className="border-b border-gray-300 py-2">
+                                        <p>{comment.text}</p>
+                                        <small>{new Date(comment.date).toLocaleString()}</small>
+                                        <button 
+                                            onClick={() => deleteComment(event._id, comment._id)} 
+                                            className="bg-red-500 text-white p-2 rounded ml-2"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 ))}
                                 <form onSubmit={(e) => {
@@ -137,15 +187,25 @@ const Dashboard = () => {
                                     addComment(event._id, comment);
                                     e.target.comment.value = '';
                                 }} className="mt-2">
-                                    <input type="text" name="comment" placeholder="Add a comment" className="w-full p-2 border border-gray-300 rounded" />
-                                    <button type="submit" className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors duration-300 mt-2">Submit</button>
+                                    <input 
+                                        type="text" 
+                                        name="comment" 
+                                        placeholder="Add a comment" 
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    />
+                                    <button 
+                                        type="submit" 
+                                        className="bg-blue-500 text-white p-2 rounded mt-2"
+                                    >
+                                        Submit
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     ))
                 ) : (
                     <div className="text-center col-span-3">
-                        <p className="text-gray-700">No events found.</p>
+                        <p>No events found.</p>
                     </div>
                 )}
             </div>

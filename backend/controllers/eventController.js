@@ -21,15 +21,43 @@ const createEvent = async (req, res) => {
 };
 
 // Get all events
+// Get all events with filtering options
 const getEvents = async (req, res) => {
     try {
-        const events = await Event.find().sort({ date: -1 });
+        const { title, startDate, endDate, location, category } = req.query;
+
+        let query = {};
+
+        if (title) {
+            query.title = { $regex: title, $options: 'i' };
+        }
+
+        if (startDate || endDate) {
+            query.date = {};
+            if (startDate) {
+                query.date.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                query.date.$lte = new Date(endDate);
+            }
+        }
+
+        if (location) {
+            query.location = { $regex: location, $options: 'i' };
+        }
+
+        if (category) {
+            query.category = category;
+        }
+
+        const events = await Event.find(query).sort({ date: -1 });
         res.json(events);
     } catch (err) {
         console.error('Server error:', err.message, err.stack);
         res.status(500).send('Server error');
     }
 };
+
 
 // Get event by ID
 const getEventById = async (req, res) => {
@@ -83,6 +111,9 @@ const deleteEvent = async (req, res) => {
 // RSVP to event
 const rsvpEvent = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(400).json({ msg: 'User not authenticated' });
+        }
         const event = await Event.findById(req.params.id);
         if (!event) {
             return res.status(404).json({ msg: 'Event not found' });
@@ -92,7 +123,7 @@ const rsvpEvent = async (req, res) => {
         }
         event.attendees.push(req.user.id);
         await event.save();
-        res.json(event);
+        res.json(event.attendees);
     } catch (err) {
         console.error('Server error:', err.message, err.stack);
         res.status(500).send('Server error');
@@ -158,6 +189,52 @@ const unlikeEvent = async (req, res) => {
     }
 };
 
+// Add feedback to event
+const addFeedback = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ msg: 'Event not found' });
+        }
+        const newFeedback = {
+            user: req.user.id,
+            rating: req.body.rating,
+            comment: req.body.comment,
+            date: Date.now()
+        };
+        event.feedback.push(newFeedback);
+        await event.save();
+        res.json(event.feedback);
+    } catch (err) {
+        console.error('Server error:', err.message, err.stack);
+        res.status(500).send('Server error');
+    }
+};
+
+const deleteComment = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ msg: 'Event not found' });
+        }
+        const commentIndex = event.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+        if (commentIndex === -1) {
+            return res.status(404).json({ msg: 'Comment not found' });
+        }
+        // Ensure the user deleting the comment is the author
+        if (event.comments[commentIndex].user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+        event.comments.splice(commentIndex, 1);
+        await event.save();
+        res.json(event.comments);
+    } catch (err) {
+        console.error('Server error:', err.message, err.stack);
+        res.status(500).send('Server error');
+    }
+};
+
+
 module.exports = {
     createEvent,
     getEvents,
@@ -167,5 +244,7 @@ module.exports = {
     rsvpEvent,
     addComment,
     likeEvent,
-    unlikeEvent
+    unlikeEvent,
+    addFeedback,
+    deleteComment
 };

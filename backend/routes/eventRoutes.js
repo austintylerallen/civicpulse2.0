@@ -10,7 +10,9 @@ const {
     rsvpEvent,
     addComment,
     likeEvent,
-    unlikeEvent
+    unlikeEvent,
+    addFeedback,
+    deleteComment
 } = require('../controllers/eventController');
 
 // Get all events
@@ -39,5 +41,12 @@ router.post('/:id/like', verifyToken, likeEvent);
 
 // Unlike event
 router.post('/:id/unlike', verifyToken, unlikeEvent);
+
+// Add feedback to event
+router.post('/:id/feedback', verifyToken, addFeedback);
+
+// Delete comment
+router.delete('/:id/comment/:commentId', verifyToken, deleteComment);
+
 
 module.exports = router;
